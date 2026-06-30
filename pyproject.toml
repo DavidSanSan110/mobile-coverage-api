@@ -25,6 +25,7 @@ dev = [
     "pytest-cov>=7.1.0",
     "respx>=0.23.1",
     "ruff>=0.15.20",
+    "scipy-stubs>=1.18.0.0",
 ]
 
 [tool.ruff]
