@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# uv / venv
+.venv/
+venv/
+
+# Environment
+.env
+
+# Raw CSV is large and not reproducible from the repo; the directory is tracked via .gitkeep
+data/raw/*.csv
+
+# Test / coverage artefacts
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Type checker
+.mypy_cache/
+
+# Linter
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
