@@ -26,6 +26,9 @@ format:  ## Format code and auto-fix lint issues with ruff
 typecheck:  ## Run mypy strict type checks
 	uv run mypy src/
 
+check:  ## Run all pre-commit hooks against every file
+	uv run pre-commit run --all-files
+
 preprocess:  ## Download antenna CSV and build data/processed/antennas.parquet
 	uv run python scripts/preprocess.py
 
