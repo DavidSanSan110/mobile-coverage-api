@@ -8,9 +8,7 @@ from pathlib import Path
 import httpx
 import polars as pl
 
-CSV_URL = (
-    "https://data.arcep.fr/mobile/sites/2018_T1/Metropole/2018_T1_sites_Metropole.csv"
-)
+CSV_URL = "https://data.arcep.fr/mobile/sites/2018_T1/Metropole/2018_T1_sites_Metropole.csv"
 RAW_PATH = Path("data/raw/2018_T1_sites_Metropole.csv")
 OUTPUT_PATH = Path("data/processed/antennas.parquet")
 
@@ -33,7 +31,7 @@ def download_csv(url: str, dest: Path) -> None:
             for chunk in response.iter_bytes():
                 fh.write(chunk)
     size_mb = dest.stat().st_size / 1_048_576
-    print(f"Downloaded {size_mb:.1f} MB → {dest}")
+    print(f"Downloaded {size_mb:.1f} MB -> {dest}")
 
 
 def transform(df: pl.DataFrame) -> pl.DataFrame:
@@ -47,7 +45,7 @@ def transform(df: pl.DataFrame) -> pl.DataFrame:
         df.with_columns(
             pl.col("Operateur")
             .cast(pl.String)
-            .replace(
+            .replace_strict(
                 old=list(OPERATOR_MAP.keys()),
                 new=list(OPERATOR_MAP.values()),
                 default=None,
@@ -58,8 +56,8 @@ def transform(df: pl.DataFrame) -> pl.DataFrame:
         .rename({"X": "x", "Y": "y", "2G": "g2", "3G": "g3", "4G": "g4"})
         .select(["operator", "x", "y", "g2", "g3", "g4"])
         .with_columns(
-            pl.col("x").cast(pl.Float64),
-            pl.col("y").cast(pl.Float64),
+            pl.col("x").str.replace(",", ".").cast(pl.Float64),
+            pl.col("y").str.replace(",", ".").cast(pl.Float64),
             pl.col("g2").cast(pl.Int8),
             pl.col("g3").cast(pl.Int8),
             pl.col("g4").cast(pl.Int8),
@@ -67,12 +65,24 @@ def transform(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+# X and Y use French decimal notation (comma) in parts of the file,
+# so they are read as String and normalised in transform().
+_CSV_SCHEMA: dict[str, type[pl.DataType]] = {
+    "Operateur": pl.String,
+    "X": pl.String,
+    "Y": pl.String,
+    "2G": pl.Int8,
+    "3G": pl.Int8,
+    "4G": pl.Int8,
+}
+
+
 def build_parquet(raw_path: Path, output_path: Path) -> None:
-    df = pl.read_csv(raw_path, separator=";")
+    df = pl.read_csv(raw_path, separator=";", schema_overrides=_CSV_SCHEMA)
     result = transform(df)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     result.write_parquet(output_path)
-    print(f"Wrote {len(result):,} antenna records → {output_path}")
+    print(f"Wrote {len(result):,} antenna records -> {output_path}")
 
 
 def main() -> None:
