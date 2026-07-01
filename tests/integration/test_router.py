@@ -1,7 +1,6 @@
 import httpx
 import pytest
 import respx
-import structlog
 from fastapi.testclient import TestClient
 from structlog.testing import capture_logs
 
