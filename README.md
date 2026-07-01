@@ -142,6 +142,34 @@ All values are overridable via environment variable or `.env` file. See [.env.ex
 
 ## Architecture and design decisions
 
+### Antenna data source — the assignment URL is inaccessible; the canonical ARCEP source was used instead
+
+The assignment provided a download link hosted on Notion's AWS S3 storage:
+
+```
+https://prod-files-secure.s3.us-west-2.amazonaws.com/34126cdd-b179-4ebd-ab8f-6ce7bf551c19/
+75f6b991-7ff9-4859-abff-ec0e56cf4346/2018_01_Sites_mobiles_2G_3G_4G_France_metropolitaine_L93_ver2.csv
+```
+
+Accessing this URL returns an `AccessDenied` XML error — Notion S3 attachments are scoped to the workspace session that created them and are not publicly accessible.
+
+The filename itself contains everything needed to find the original source: `Sites_mobiles` (ARCEP's dataset name), `L93` (Lambert93 coordinate system, the standard projection for French public geographic data), `2018_01` (Q1 2018), and `France_metropolitaine` (mainland France). This is a dataset published by ARCEP, the French telecommunications regulator, as open government data.
+
+ARCEP's open data server (`data.arcep.fr`) exposes these files under a predictable path structure. Mapping the Notion filename to that structure:
+
+| Notion filename fragment | ARCEP path segment |
+|---|---|
+| `2018_01` (Q1 2018) | `2018_T1` |
+| `France_metropolitaine` | `Metropole` |
+
+The canonical, publicly accessible URL is:
+
+```
+https://data.arcep.fr/mobile/sites/2018_T1/Metropole/2018_T1_sites_Metropole.csv
+```
+
+This is what `scripts/preprocess.py` uses. The processed parquet file is committed to the repository so reviewers do not need to run `make preprocess` to start the API.
+
 ### Lambert93 comes directly from the geocoding API — no coordinate conversion needed
 
 The assignment appendix suggests using `pyproj` to convert WGS84 coordinates returned by the geocoding API into Lambert93 to match the antenna CSV. In practice, the API already returns Lambert93 `x` / `y` in its response properties:
