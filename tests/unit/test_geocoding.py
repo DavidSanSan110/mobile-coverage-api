@@ -2,7 +2,7 @@ import httpx
 import pytest
 import respx
 
-from coverage.services.geocoding import (
+from mobile_coverage.services.geocoding import (
     AddressNotFoundError,
     GeocodingServiceError,
     GeoPoint,

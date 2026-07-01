@@ -2,8 +2,8 @@ import polars as pl
 import pytest
 from scipy.spatial import cKDTree
 
-from coverage.data.loader import OPERATORS, TECH_COLS, Trees, build_kdtrees
-from coverage.services.coverage import RADII, get_coverage, is_covered
+from mobile_coverage.data.loader import OPERATORS, TECH_COLS, Trees, build_kdtrees
+from mobile_coverage.services.coverage import RADII, get_coverage, is_covered
 
 
 @pytest.fixture

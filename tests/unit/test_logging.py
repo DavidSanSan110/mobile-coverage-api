@@ -1,7 +1,7 @@
 import structlog
 from structlog.testing import capture_logs
 
-from coverage.logging_config import configure_logging
+from mobile_coverage.logging_config import configure_logging
 
 
 class TestConfigureLogging:

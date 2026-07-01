@@ -4,7 +4,7 @@ import respx
 from fastapi.testclient import TestClient
 from structlog.testing import capture_logs
 
-from coverage.main import app
+from mobile_coverage.main import app
 
 GEOCODING_URL = "https://api-adresse.data.gouv.fr/search/"
 
