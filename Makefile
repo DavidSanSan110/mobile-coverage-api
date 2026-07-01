@@ -24,7 +24,7 @@ else
 endif
 
 run-docker:  ## Build and start the full stack with Docker Compose (visit http://localhost:8000)
-	@test -f .env || cp .env.example .env
+	uv run python -c "import shutil, os; os.path.exists('.env') or shutil.copy('.env.example', '.env')"
 	docker compose up --build
 
 dev-api:  ## Run backend dev server with auto-reload (port 8000)
