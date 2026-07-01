@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from coverage.models import (
+from mobile_coverage.models import (
     AddressError,
     CoverageRequest,
     HealthResponse,

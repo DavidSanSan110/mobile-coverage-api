@@ -1,0 +1,42 @@
+name: Deploy
+
+# Fires only after the CI workflow completes successfully on main.
+# This guarantees lint + tests pass before any deploy reaches production.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Write the production .env from the GitHub secret so docker compose
+      # picks it up without storing the file in the repository.
+      - name: Write .env
+        run: echo "${{ secrets.APP_ENV }}" > .env
+
+      - name: Build image
+        run: docker compose build coverage-api
+
+      - name: Deploy
+        run: docker compose up -d --no-deps coverage-api
+
+      # Poll /health for up to 30 s; fail the job if the container never
+      # becomes healthy (e.g. bad DATA_PATH, corrupt parquet).
+      - name: Health check
+        run: |
+          for i in $(seq 1 10); do
+            if curl -sf http://localhost:8000/health; then
+              echo "Health check passed"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Health check failed after 30 s"
+          exit 1

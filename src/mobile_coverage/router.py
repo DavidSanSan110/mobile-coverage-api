@@ -4,17 +4,17 @@ import httpx
 import structlog
 from fastapi import APIRouter, HTTPException, Request
 
-from coverage.config import Settings
-from coverage.data.loader import Trees
-from coverage.models import (
+from mobile_coverage.config import Settings
+from mobile_coverage.data.loader import Trees
+from mobile_coverage.models import (
     AddressError,
     CoverageRequest,
     HealthResponse,
     OperatorCoverage,
     TechCoverage,
 )
-from coverage.services.coverage import get_coverage
-from coverage.services.geocoding import AddressNotFoundError, geocode_batch
+from mobile_coverage.services.coverage import get_coverage
+from mobile_coverage.services.geocoding import AddressNotFoundError, geocode_batch
 
 router = APIRouter()
 log = structlog.get_logger()

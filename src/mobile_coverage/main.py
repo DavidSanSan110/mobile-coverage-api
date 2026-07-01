@@ -4,11 +4,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from coverage.config import Settings
-from coverage.data.loader import build_kdtrees, load_parquet
-from coverage.logging_config import configure_logging
-from coverage.middleware import RequestIdMiddleware
-from coverage.router import router
+from mobile_coverage.config import Settings
+from mobile_coverage.data.loader import build_kdtrees, load_parquet
+from mobile_coverage.logging_config import configure_logging
+from mobile_coverage.middleware import RequestIdMiddleware
+from mobile_coverage.router import router
 
 _settings = Settings()
 configure_logging(_settings.log_format)

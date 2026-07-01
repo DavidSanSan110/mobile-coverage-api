@@ -2,7 +2,7 @@
 
 from scipy.spatial import cKDTree
 
-from coverage.data.loader import Trees
+from mobile_coverage.data.loader import Trees
 
 RADII: dict[str, int] = {
     "2G": 30_000,

@@ -11,7 +11,7 @@ install:  ## Create .venv and install all dependencies (including dev)
 	@echo "  Windows   : .venv\\Scripts\\Activate.ps1"
 
 dev:  ## Run development server with auto-reload
-	uv run uvicorn coverage.main:app --reload --host 0.0.0.0 --port 8000
+	uv run uvicorn mobile_coverage.main:app --reload --host 0.0.0.0 --port 8000
 
 test:  ## Run test suite with coverage report
 	uv run pytest --cov --cov-report=term-missing

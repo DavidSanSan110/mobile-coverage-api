@@ -1,5 +1,7 @@
 # mobile-coverage-api
 
+[![CI](https://github.com/DavidSanSan110/mobile-coverage-api/actions/workflows/ci.yml/badge.svg)](https://github.com/DavidSanSan110/mobile-coverage-api/actions/workflows/ci.yml)
+
 A REST API that accepts French addresses and returns mobile network coverage
 (2G / 3G / 4G) for all four major operators: Orange, SFR, Bouygues, and Free Mobile.
 
