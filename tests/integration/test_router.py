@@ -2,6 +2,7 @@ import httpx
 import pytest
 import respx
 from fastapi.testclient import TestClient
+from structlog.testing import capture_logs
 
 from coverage.main import app
 
@@ -111,3 +112,62 @@ class TestCoverageEndpoint:
             mock.get(GEOCODING_URL).mock(return_value=_ok())
             data = client.post("/coverage", json={"alpha": "addr1", "beta": "addr2"}).json()
         assert set(data.keys()) == {"alpha", "beta"}
+
+
+class TestCoverageLogging:
+    def test_geocoding_complete_is_logged_once_per_address(self, client: TestClient) -> None:
+        with respx.mock as mock, capture_logs() as cap:
+            mock.get(GEOCODING_URL).mock(return_value=_ok())
+            client.post("/coverage", json={"id1": "addr1", "id2": "addr2"})
+        events = [e for e in cap if e.get("event") == "geocoding_complete"]
+        assert len(events) == 2
+
+    def test_geocoding_complete_status_found_on_success(self, client: TestClient) -> None:
+        with respx.mock as mock, capture_logs() as cap:
+            mock.get(GEOCODING_URL).mock(return_value=_ok())
+            client.post("/coverage", json={"id1": "good address"})
+        event = next(e for e in cap if e.get("event") == "geocoding_complete")
+        assert event["status"] == "found"
+        assert event["address_id"] == "id1"
+
+    def test_geocoding_complete_status_not_found_on_failure(self, client: TestClient) -> None:
+        def _respond(request: httpx.Request) -> httpx.Response:
+            return _ok() if request.url.params.get("q") == "good" else _empty()
+
+        with respx.mock as mock, capture_logs() as cap:
+            mock.get(GEOCODING_URL).mock(side_effect=_respond)
+            client.post("/coverage", json={"good": "good", "bad": "gibberish"})
+
+        failed = next(
+            e
+            for e in cap
+            if e.get("event") == "geocoding_complete" and e.get("address_id") == "bad"
+        )
+        assert failed["status"] == "not_found"
+
+    def test_request_complete_is_logged_once_per_request(self, client: TestClient) -> None:
+        with respx.mock as mock, capture_logs() as cap:
+            mock.get(GEOCODING_URL).mock(return_value=_ok())
+            client.post("/coverage", json={"id1": "some address"})
+        events = [e for e in cap if e.get("event") == "request_complete"]
+        assert len(events) == 1
+
+    def test_request_complete_has_correct_counts(self, client: TestClient) -> None:
+        def _respond(request: httpx.Request) -> httpx.Response:
+            return _ok() if request.url.params.get("q") == "good" else _empty()
+
+        with respx.mock as mock, capture_logs() as cap:
+            mock.get(GEOCODING_URL).mock(side_effect=_respond)
+            client.post("/coverage", json={"good": "good", "bad": "bad1", "bad2": "bad2"})
+
+        event = next(e for e in cap if e.get("event") == "request_complete")
+        assert event["addresses_count"] == 3
+        assert event["errors_count"] == 2
+
+    def test_request_complete_includes_latency(self, client: TestClient) -> None:
+        with respx.mock as mock, capture_logs() as cap:
+            mock.get(GEOCODING_URL).mock(return_value=_ok())
+            client.post("/coverage", json={"id1": "some address"})
+        event = next(e for e in cap if e.get("event") == "request_complete")
+        assert "geocoding_latency_ms" in event
+        assert "total_latency_ms" in event
