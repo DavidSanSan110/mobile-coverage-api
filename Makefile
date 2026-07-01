@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 export PYTHONPATH := src
 
-.PHONY: install dev dev-api dev-frontend test lint format typecheck preprocess clean help
+.PHONY: install run-local run-docker dev dev-api dev-frontend test lint format typecheck preprocess clean help
 
 install:  ## Create .venv and install all dependencies (including dev)
 	uv sync
@@ -10,6 +10,14 @@ install:  ## Create .venv and install all dependencies (including dev)
 	@echo "Dependencies installed. Activate the virtual environment with:"
 	@echo "  Linux/Mac : source .venv/bin/activate"
 	@echo "  Windows   : .venv\\Scripts\\Activate.ps1"
+
+run-local:  ## Start API + frontend dev servers (visit http://localhost:5173)
+	uv run uvicorn mobile_coverage.main:app --reload --host 0.0.0.0 --port 8000 &
+	cd frontend && npm run dev
+
+run-docker:  ## Build and start the full stack with Docker Compose (visit http://localhost:8000)
+	@test -f .env || cp .env.example .env
+	docker compose up --build
 
 dev-api:  ## Run backend dev server with auto-reload (port 8000)
 	uv run uvicorn mobile_coverage.main:app --reload --host 0.0.0.0 --port 8000
