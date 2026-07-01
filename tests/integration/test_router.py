@@ -4,7 +4,6 @@ import respx
 from fastapi.testclient import TestClient
 
 from coverage.main import app
-from coverage.models import OperatorCoverage
 
 GEOCODING_URL = "https://api-adresse.data.gouv.fr/search/"
 
@@ -68,12 +67,16 @@ class TestCoverageEndpoint:
             for v in operator_data.values():
                 assert isinstance(v, bool)
 
-    def test_failed_geocoding_returns_error_per_address(self, client: TestClient) -> None:
+    def test_failed_geocoding_returns_address_not_found_error(self, client: TestClient) -> None:
+        # One succeeds, one fails — confirms per-address error shape in a partial failure.
+        def _respond(request: httpx.Request) -> httpx.Response:
+            return _ok() if request.url.params.get("q") == "good" else _empty()
+
         with respx.mock as mock:
-            mock.get(GEOCODING_URL).mock(return_value=_empty())
-            response = client.post("/coverage", json={"id1": "gibberish"})
-        assert response.status_code == 200
-        assert "error" in response.json()["id1"]
+            mock.get(GEOCODING_URL).mock(side_effect=_respond)
+            data = client.post("/coverage", json={"ok": "good", "bad": "gibberish"}).json()
+
+        assert data["bad"] == {"error": "address_not_found"}
 
     def test_all_geocoding_fails_returns_503(self, client: TestClient) -> None:
         with respx.mock as mock:
@@ -90,9 +93,7 @@ class TestCoverageEndpoint:
         response = client.post("/coverage", json=payload)
         assert response.status_code == 422
 
-    def test_partial_failure_returns_200_with_mixed_results(
-        self, client: TestClient
-    ) -> None:
+    def test_partial_failure_returns_200_with_mixed_results(self, client: TestClient) -> None:
         def _respond(request: httpx.Request) -> httpx.Response:
             return _ok() if request.url.params.get("q") == "good address" else _empty()
 
