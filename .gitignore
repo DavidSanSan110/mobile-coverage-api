@@ -28,6 +28,9 @@ htmlcov/
 .vscode/
 .idea/
 
+# Locust per-second history (large, low value for reviewers)
+locust/results/*_history.csv
+
 # OS
 .DS_Store
 Thumbs.db
