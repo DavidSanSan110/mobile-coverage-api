@@ -27,14 +27,13 @@ jobs:
         run: docker compose build coverage-api
 
       - name: Deploy
-        run: docker compose up -d --no-deps coverage-api
+        run: docker compose up -d
 
-      # Poll /health for up to 30 s; fail the job if the container never
-      # becomes healthy (e.g. bad DATA_PATH, corrupt parquet).
+      # Poll /health via HTTPS through Caddy for up to 30 s.
       - name: Health check
         run: |
           for i in $(seq 1 10); do
-            if curl -sf http://localhost:8000/health; then
+            if curl -sf https://coverage-api.ddns.net/health; then
               echo "Health check passed"
               exit 0
             fi
