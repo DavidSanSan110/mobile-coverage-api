@@ -6,9 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from coverage.config import Settings
 from coverage.data.loader import build_kdtrees, load_parquet
+from coverage.logging_config import configure_logging
+from coverage.middleware import RequestIdMiddleware
 from coverage.router import router
 
 _settings = Settings()
+configure_logging(_settings.log_format)
 
 
 @asynccontextmanager
@@ -21,6 +24,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(title="mobile-coverage-api", lifespan=lifespan)
+app.add_middleware(RequestIdMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_settings.cors_origins,
