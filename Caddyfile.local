@@ -1,0 +1,7 @@
+# Local development Caddyfile — plain HTTP, no TLS, no domain required.
+# Used automatically when running make run-docker on a developer machine.
+# The CADDYFILE env var in .env.example points here; production .env does not
+# set CADDYFILE so docker-compose.yml falls back to ./Caddyfile (HTTPS + domain).
+:80 {
+    reverse_proxy coverage-api:8000
+}

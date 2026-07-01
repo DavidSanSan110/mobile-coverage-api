@@ -19,7 +19,9 @@ make install
 make run-docker
 ```
 
-Visit [http://localhost:8000](http://localhost:8000).
+Visit [http://localhost](http://localhost) (port 80).
+
+> **How it works:** `make run-docker` copies `.env.example` → `.env` when no `.env` exists. `.env.example` sets `CADDYFILE=./Caddyfile.local`, which configures Caddy with plain HTTP on `:80` — no domain, no TLS. The production `.env` (deployed via the `APP_ENV` GitHub secret) does not set `CADDYFILE`, so `docker-compose.yml` falls back to `./Caddyfile`, which enables HTTPS on `coverage-api.ddns.net`.
 
 ### Local dev (hot-reload on both API and frontend)
 
@@ -50,7 +52,7 @@ make run-local
 |---|---|
 | `make install` | Create `.venv`, install all Python and Node dependencies |
 | `make run-local` | Start API on `:8000` + Vite on `:5173` (backgrounds API) |
-| `make run-docker` | Copy `.env.example` → `.env` if missing, then `docker compose up --build` |
+| `make run-docker` | Copy `.env.example` → `.env` if missing, then `docker compose up --build` (visit `http://localhost`) |
 | `make dev-api` | Backend only, auto-reload |
 | `make dev-frontend` | Frontend Vite dev server only |
 | `make test` | Run pytest with branch coverage report |
@@ -263,6 +265,8 @@ GEOCODING_TIMEOUT_SECONDS=10.0
 ```
 
 > **Important:** the secret is written to disk via `printf '%s' "$APP_ENV" > .env`. Direct `echo "${{ secrets.APP_ENV }}"` will corrupt JSON values like `CORS_ORIGINS` due to shell quote expansion.
+
+> **Do not set `CADDYFILE` in the production secret.** When `CADDYFILE` is absent, `docker-compose.yml` defaults to `./Caddyfile`, which enables HTTPS with auto-TLS on `coverage-api.ddns.net`. Setting it to `Caddyfile.local` in production would serve plain HTTP and disable TLS.
 
 ### Stack
 
