@@ -1,8 +1,10 @@
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from mobile_coverage.config import Settings
 from mobile_coverage.data.loader import build_kdtrees, load_parquet
@@ -12,6 +14,8 @@ from mobile_coverage.router import router
 
 _settings = Settings()
 configure_logging(_settings.log_format)
+
+_FRONTEND_DIST = Path("frontend/dist")
 
 
 @asynccontextmanager
@@ -32,3 +36,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(router)
+
+# Serve the Vue SPA when the built dist exists.
+# Absent in local dev (use Vite's dev server instead); present in Docker.
+if _FRONTEND_DIST.exists():
+    app.mount("/", StaticFiles(directory=str(_FRONTEND_DIST), html=True), name="frontend")
