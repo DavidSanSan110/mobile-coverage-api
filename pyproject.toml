@@ -17,6 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "httpx2>=2.5.0",
     "locust>=2.44.4",
     "mypy>=2.1.0",
     "pre-commit>=4.6.0",
