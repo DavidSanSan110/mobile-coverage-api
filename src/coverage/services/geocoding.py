@@ -83,8 +83,6 @@ async def geocode_batch(
             )
             for address in addresses.values()
         ]
-        raw: list[GeoPoint | BaseException] = await asyncio.gather(
-            *tasks, return_exceptions=True
-        )
+        raw: list[GeoPoint | BaseException] = await asyncio.gather(*tasks, return_exceptions=True)
 
     return dict(zip(addresses.keys(), raw, strict=True))
