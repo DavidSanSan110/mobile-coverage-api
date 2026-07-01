@@ -12,8 +12,16 @@ install:  ## Create .venv and install all dependencies (including dev)
 	@echo "  Windows   : .venv\\Scripts\\Activate.ps1"
 
 run-local:  ## Start API + frontend dev servers (visit http://localhost:5173)
+ifeq ($(OS),Windows_NT)
+	@echo ""
+	@echo "Windows detected. Run each in a separate terminal:"
+	@echo "  make dev-api       (backend  -> http://localhost:8000)"
+	@echo "  make dev-frontend  (frontend -> http://localhost:5173)"
+	@echo ""
+else
 	uv run uvicorn mobile_coverage.main:app --reload --host 0.0.0.0 --port 8000 &
 	cd frontend && npm run dev
+endif
 
 run-docker:  ## Build and start the full stack with Docker Compose (visit http://localhost:8000)
 	@test -f .env || cp .env.example .env

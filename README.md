@@ -30,7 +30,7 @@ make run-local   # backgrounds API on :8000, starts Vite on :5173
 
 Visit [http://localhost:5173](http://localhost:5173). The Vite dev server proxies API calls to the backend so both sides hot-reload independently.
 
-> **Windows:** `make run-local` requires Git Bash or WSL. In PowerShell run `make dev-api` and `make dev-frontend` in two separate terminals instead.
+> **Windows:** `make run-local` detects Windows automatically and prints instructions for running each server in a separate terminal. Use `make dev-api` in one terminal and `make dev-frontend` in another.
 
 ### From scratch (no pre-built parquet)
 
