@@ -31,6 +31,10 @@ htmlcov/
 # Locust per-second history (large, low value for reviewers)
 locust/results/*_history.csv
 
+# Frontend build output (built by CI and Docker; not committed)
+frontend/dist/
+frontend/node_modules/
+
 # OS
 .DS_Store
 Thumbs.db
