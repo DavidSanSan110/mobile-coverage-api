@@ -19,7 +19,9 @@ jobs:
       # Write the production .env from the GitHub secret so docker compose
       # picks it up without storing the file in the repository.
       - name: Write .env
-        run: echo "${{ secrets.APP_ENV }}" > .env
+        env:
+          APP_ENV: ${{ secrets.APP_ENV }}
+        run: printf '%s' "$APP_ENV" > .env
 
       - name: Build image
         run: docker compose build coverage-api
